@@ -1,5 +1,6 @@
 
-import json 
+import json
+from bson import ObjectId 
 from pymongo import MongoClient
 import urllib
 import json
@@ -9,14 +10,15 @@ import urllib.parse
 from pymongo import MongoClient
 from sys import exit
 
-my_conn, my_db =None, None
+my_conn, my_db, mongodb_config =None, None, None
 
 
 
 def Initialize():
-    with open("configs.json", "r") as r:
+    global my_conn, my_db, mongodb_config
+    with open(".env", "r") as r:
         mongodb_config = json.load(r)
-    global my_conn, my_db
+    
     username_rh = urllib.parse.quote_plus(mongodb_config['username'].strip())
     password_rh = urllib.parse.quote_plus(mongodb_config['password'].strip())
     if username_rh!="" and password_rh!="":
@@ -33,4 +35,17 @@ def Initialize():
     except:
         print("Mongo Connection Error")
         exit(1)
-        
+
+def find_algo_url(id_mapAl_algoAI):
+    url = None
+    # try:
+    mapAl_algo_ai = my_db[mongodb_config["mapAlgTypeAI_collection"]].find({"id":id_mapAl_algoAI})
+    id_algorithm = list(mapAl_algo_ai)[0]["algorId"]
+    url = list(my_db[mongodb_config["algorithm_collection"]].find({"algorId":id_algorithm}))[0]["urlAPI"]
+    # except:
+    #     pass
+    return url
+
+if __name__ =="__main__":
+    Initialize()
+    print(find_algo_url(17))
