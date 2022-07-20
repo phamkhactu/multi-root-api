@@ -61,37 +61,29 @@ def check_valid_input(dataInput):
         except:
             return 401
     
-    if cluster == False and len(topic.keys())==0:
+    if cluster == False and len(topic)==0:
         return 407
     return 200
 
 def infer(manger,dataInput, url, key):
-    res =  requests.post(url, json=dataInput)
-    res = json.loads(res.content)
-
-    manger[key] = {"result":res["result"], "code":res["code"]}
+    # check if empty input after cluster or topic
+    if len(dataInput["list_doc"])==0:
+        manger[key] = {"result":None, "code":200}
+    else:
+        res =  requests.post(url, json=dataInput)
+        res = json.loads(res.content)
+        manger[key] = {"result":res["result"], "code":res["code"]}
     
-def test_mul_infer():
+def mul_infer(inputs, url):
     manager = Manager()
     d = manager.dict()        
-   
-    dataInput ={
-        "list_doc":[
-            "Voters in 11 states will pick their governors tonight, and Republicans appear on track to increase their numbers by at least one, with the potential to extend their hold to more than two-thirds of the nation's top state offices.\nEight of the gubernatorial seats up for grabs are now held by Democrats; three are in Republican hands. Republicans currently hold 29 governorships, Democrats have 20, and Rhode Island's Gov. Lincoln Chafee is an Independent.\nPolls and race analysts suggest that only three of tonight's contests are considered competitive, all in states where incumbent Democratic governors aren't running again: Montana, New Hampshire and Washington.\nWhile those state races remain too close to call, Republicans are expected to wrest the North Carolina governorship from Democratic control, and to easily win GOP-held seats in Utah, North Dakota and Indiana.\nDemocrats are likely to hold on to their seats in West Virginia and Missouri, and are expected to notch safe wins in races for seats they hold in Vermont and Delaware.",
-            "While the occupant of the governor's office is historically far less important than the party that controls the state legislature, top state officials in coming years are expected to wield significant influence in at least one major area.\nAnd that's health care, says political scientist Thad Kousser, co-author of The Power of American Governors.\n'No matter who wins the presidency, national politics is going to be stalemated on the Affordable Care Act,' says Kousser, of the University of California, San Diego.\nA recent U.S. Supreme Court decision giving states the ability to opt out of the law's expansion of Medicaid, the federal insurance program for poor, disabled and elderly Americans, confers 'incredible power' on the states and their governors, Kousser says.\nJust look at what happened when the Obama administration in 2010 offered federal stimulus money to states to begin building a high-speed rail network. Three Republican governors, including Rick Scott of Florida and Scott Walker of Wisconsin, rejected a share of the money citing debt and deficit concerns.\n'A [Mitt] Romney victory would dramatically empower Republican governors,' Kousser says."
-        ],
-        "percent_output":0.3
-    }
     
-    inputs = [dataInput, dataInput, dataInput, dataInput]
-    
-    url = "http://127.0.0.1:6688/extract"
     for idx, docs in enumerate(inputs):
         p = Process(target=infer, args=(d, inputs[idx],url, idx))
         p.start()
         p.join()
-
-    print(d)
+        
+    return d
 
 def check_contain(logic, text):
     assert(logic, list), "must be list logic to check valid"
@@ -131,7 +123,39 @@ def cluster_topics(dataInput):
                 elem_arr_valid.append(jdx)
         dataInput["topic"][idx].update({"elem_arr":elem_arr_valid})
     return dataInput
+    
+def pre_data_cluster(dataInput, list_cluster, ):
+    percent_output = dataInput["percent_output"]
+    raw_data = dataInput["raw_text"]
+    inputs =[]
+    for cluster in list_cluster:
+        list_text_raw = []
+        for idx in cluster:
+            list_text_raw.append(raw_data[idx])
+        inputs.append(
+            {
+            "list_doc":list_text_raw,
+            "percent_output":percent_output
+        })
         
+    return inputs
+
+def pre_data_topic(dataInput):
+    dataInput = cluster_topics(dataInput)
+    inputs = []
+    topics = dataInput["topic"]
+    for top in topics:
+        elem_arr = top["elem_arr"]
+        list_text_raw = []
+        for elem in elem_arr:
+            list_text_raw.append(dataInput["raw_text"][elem])
+        inputs.append(
+            {
+            "list_doc":list_text_raw,
+            "percent_output":dataInput["percent_output"]
+        })
+        
+    return inputs
 if __name__ == '__main__':
     data = {
         "raw_text":["abc a fg", "bdcd a b dfdanc", "a bc cd"],
@@ -149,5 +173,14 @@ if __name__ == '__main__':
         "percent_output": 0.3,
         "cluster": False
         }
-    print(cluster_topics(data))
+    data = cluster_topics(data)
+    print(data)
+    print(pre_data_topic(data))
+    # raw="While the occupant of the governor's office is historically far less important than the party that controls the state legislature, top state officials in coming years are expected to wield significant influence in at least one major area.\nAnd that's health care, says political scientist Thad Kousser, co-author of The Power of American Governors.\n'No matter who wins the presidency, national politics is going to be stalemated on the Affordable Care Act,' says Kousser, of the University of California, San Diego.\nA recent U.S. Supreme Court decision giving states the ability to opt out of the law's expansion of Medicaid, the federal insurance program for poor, disabled and elderly Americans, confers 'incredible power' on the states and their governors, Kousser says.\nJust look at what happened when the Obama administration in 2010 offered federal stimulus money to states to begin building a high-speed rail network. Three Republican governors, including Rick Scott of Florida and Scott Walker of Wisconsin, rejected a share of the money citing debt and deficit concerns.\n'A [Mitt] Romney victory would dramatically empower Republican governors"
     
+    # raw_data = [raw, raw, raw, raw, raw, raw,raw]
+    # list_cluster = [[0,1,2],[3,4,2]]
+    
+    # inputs = pre_data(raw_data, topics[""])
+    # d = mul_infer(inputs, url="http://192.168.6.18:8899/extract")
+    # print(d)

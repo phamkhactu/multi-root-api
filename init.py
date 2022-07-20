@@ -4,18 +4,19 @@ from bson import ObjectId
 from pymongo import MongoClient
 import urllib
 import json
-
-
 import urllib.parse
 from pymongo import MongoClient
 from sys import exit
 
-my_conn, my_db, mongodb_config =None, None, None
+my_conn, my_db, mongodb_config, configs =None, None, None, None
 
 
 
 def Initialize():
-    global my_conn, my_db, mongodb_config
+    global my_conn, my_db, mongodb_config,configs
+    with open("configs.json", "r") as r:
+        configs = json.load(r)
+        
     with open(".env", "r") as r:
         mongodb_config = json.load(r)
     
@@ -38,12 +39,12 @@ def Initialize():
 
 def find_algo_url(id_mapAl_algoAI):
     url = None
-    # try:
-    mapAl_algo_ai = my_db[mongodb_config["mapAlgTypeAI_collection"]].find({"id":id_mapAl_algoAI})
-    id_algorithm = list(mapAl_algo_ai)[0]["algorId"]
-    url = list(my_db[mongodb_config["algorithm_collection"]].find({"algorId":id_algorithm}))[0]["urlAPI"]
-    # except:
-    #     pass
+    try:
+        mapAl_algo_ai = my_db[mongodb_config["mapAlgTypeAI_collection"]].find({"id":id_mapAl_algoAI})
+        id_algorithm = list(mapAl_algo_ai)[0]["algorId"]
+        url = list(my_db[mongodb_config["algorithm_collection"]].find({"algorId":id_algorithm}))[0]["urlAPI"]
+    except:
+        pass
     return url
 
 if __name__ =="__main__":
