@@ -70,9 +70,10 @@ def infer(manger,dataInput, url, key):
     if len(dataInput["list_doc"])==0:
         manger[key] = {"result":None, "code":200}
     else:
-        res =  requests.post(url, json=dataInput)
+        res=  requests.post(url, json=dataInput)
+        code = res.status_code
         res = json.loads(res.content)
-        manger[key] = {"result":res["result"], "code":res["code"]}
+        manger[key] = {"result":res["result"], "code":code}
     
 def mul_infer(inputs, url):
     manager = Manager()
