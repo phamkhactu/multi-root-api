@@ -3,7 +3,7 @@ import json
 import requests
 from multiprocessing import Process, Manager
 import logging
-logging.basicConfig(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 def check_valid_input(dataInput):
     # check type
