@@ -27,8 +27,9 @@ def summary(dataInput):
         
     if cluster:
         url_cluster = init.configs["url_cluster"]
-        res = requests.post(url_cluster, json={"list_doc":dataInput["raw_data"]})
-        list_cluster, code = json.loads(res.content)
+        res = requests.post(url_cluster, json={"list_doc":dataInput["raw_text"]})
+        code = res.status_code
+        list_cluster = json.loads(res.content)["clusters"]
         # list_cluster, code =[[0,1],[1,2]],200
         if code!=200:
             logging.info("err call api cluster")
@@ -39,7 +40,7 @@ def summary(dataInput):
             "result":
                 {
                 "cluster": [],
-                "topic": {}
+                "topic": []
                 }
             }
         keys = dic_res.keys()
@@ -51,7 +52,7 @@ def summary(dataInput):
                     "elem_arr": list_cluster[k]
                     },
             )
-        return result,dic_res[keys[0]]["code"]
+        return result, 200
     inputs = helpers.pre_data_topic(dataInput)
     dic_res = helpers.mul_infer(inputs,url_algo)
     result={"result":
@@ -70,7 +71,7 @@ def summary(dataInput):
                     "elem_arr": dataInput["topic"][k]["elem_arr"]
                 },
         )
-    return result, dic_res[keys[0]]["code"]
+    return result, 200
 
 if __name__ == '__main__':
     dataInput={

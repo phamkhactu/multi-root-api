@@ -1,7 +1,9 @@
+from cmath import log
 import json
 import requests
 from multiprocessing import Process, Manager
-
+import logging
+logging.basicConfig(logging.INFO)
 
 def check_valid_input(dataInput):
     # check type
@@ -72,8 +74,12 @@ def infer(manger,dataInput, url, key):
     else:
         res=  requests.post(url, json=dataInput)
         code = res.status_code
-        res = json.loads(res.content)
-        manger[key] = {"result":res["result"], "code":code}
+        if code !=200:
+            logging.error(f"{code} status code in {url}")
+            manger[key] = {"result":None, "code":code}
+        else:
+            res = json.loads(res.content)
+            manger[key] = {"result":res["result"], "code":code}
     
 def mul_infer(inputs, url):
     manager = Manager()
@@ -87,7 +93,7 @@ def mul_infer(inputs, url):
     return d
 
 def check_contain(logic, text):
-    assert(logic, list), "must be list logic to check valid"
+    # assert(logic, list), "must be list logic to check valid"
     result = []
     for express_logic in logic:
         is_valid = True
@@ -125,7 +131,7 @@ def cluster_topics(dataInput):
         dataInput["topic"][idx].update({"elem_arr":elem_arr_valid})
     return dataInput
     
-def pre_data_cluster(dataInput, list_cluster, ):
+def pre_data_cluster(dataInput, list_cluster):
     percent_output = dataInput["percent_output"]
     raw_data = dataInput["raw_text"]
     inputs =[]
