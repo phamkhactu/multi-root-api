@@ -7,6 +7,7 @@ logging.basicConfig(level= logging.INFO)
 import helpers
 import json
 import controller
+import init 
 
 app = Flask(__name__)
 CORS(app)
@@ -26,4 +27,5 @@ def multi():
         return {}, code
     return json.dumps(controller.summary(content)).encode('utf8')
 
+init.Initialize()
 app.run(host='0.0.0.0', port=9988)

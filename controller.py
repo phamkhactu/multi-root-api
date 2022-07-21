@@ -14,8 +14,8 @@ def summary(dataInput):
         logging.info("id_mapAlgTypeAI must int")
         return {"result":None}, 500
 
-    # url_algo = init.find_algo_url(id_mapAlgTypeAI)
-    url_algo = "http://192.168.6.18:8899/extract"
+    url_algo = init.find_algo_url(id_mapAlgTypeAI)
+    # url_algo = "http://192.168.6.18:8899/extract"
     if url_algo is None:
         logging.info("Can not find url algorithm")
         return {"result":None}, 500
