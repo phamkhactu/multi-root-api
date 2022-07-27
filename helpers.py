@@ -70,16 +70,16 @@ def check_valid_input(dataInput):
 def infer(manger,dataInput, url, key):
     # check if empty input after cluster or topic
     if len(dataInput["list_doc"])==0:
-        manger[key] = {"result":None, "code":200}
+        manger[key] = {"result":None}
     else:
         res=  requests.post(url, json=dataInput)
         code = res.status_code
         if code !=200:
             logging.error(f"{code} status code in {url}")
-            manger[key] = {"result":None, "code":code}
+            manger[key] = {"result":None}
         else:
             res = json.loads(res.content)
-            manger[key] = {"result":res["result"], "code":code}
+            manger[key] = {"result":res["result"]}
     
 def mul_infer(inputs, url):
     manager = Manager()
