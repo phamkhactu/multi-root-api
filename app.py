@@ -25,6 +25,7 @@ def multi():
     code = helpers.check_valid_input(content)
     if code != 200:
         return {}, code
+    content = helpers.convert_b64_file_to_text(content)
     return json.dumps(controller.summary(content)).encode('utf8')
 
 init.Initialize()
