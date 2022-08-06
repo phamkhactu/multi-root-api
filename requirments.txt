@@ -1,3 +1,7 @@
 Flask==2.1.0
 Flask-API==3.0.post1
 Flask-Cors==3.0.10
+PyMuPDF
+python-docx 
+pymongo
+requests
