@@ -5,7 +5,6 @@ from multiprocessing import Process, Manager
 import logging
 logging.basicConfig(level=logging.INFO)
 import base_64 
-import base64
 
 def check_valid_input(dataInput):
     # check type
@@ -43,7 +42,7 @@ def check_valid_input(dataInput):
     try:
         if not isinstance(dataInput["file_type"], list) or len(dataInput["file_type"]) != len(dataInput["raw_text"]):
             return 408
-        for _type in data["file_type"]:
+        for _type in dataInput["file_type"]:
             try:
                 int(_type)
             except:
@@ -179,8 +178,7 @@ def pre_data_topic(dataInput):
 def convert_b64_file_to_text(dataInput):
     raw_data_files = dataInput["raw_text"]
     file_types = dataInput["file_type"]
-    for idx, data_file in raw_data_files:
-        data_file = base64.b64encode(data_file.read())
+    for idx, data_file in enumerate(raw_data_files):
         r_text = base_64.get_raw_text(data_file,int(file_types[idx]),0,99999)
         dataInput["raw_text"][idx] = r_text
     

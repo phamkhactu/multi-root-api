@@ -49,6 +49,7 @@ def process_pdf_text(file_name,page_from,page_to):
     all_text = ''
     all_text_list = []
     count = 0
+    all_text_list_process = []
     for page in doc:  # iterate the document pages
         if page.number >= page_from and page.number <= page_to:
             count+=1
@@ -61,20 +62,24 @@ def process_pdf_text(file_name,page_from,page_to):
                     list_paragraph.append(paragraph)
             for paragraph in list_paragraph:
                 text = paragraph.replace("\n", " ")
-                re.sub('[^A-Za-z0-9]+', '', text)
-                text = re.sub(' +', ' ', text)
                 strencode = text.encode("ascii", "ignore")
                 #decode() method
                 text = strencode.decode()
+                text = text.replace("\t", "") 
+                text = text.replace("\r", "") 
+                re.sub('[^A-Za-z0-9]+', '', text)
+                text = re.sub(' +', ' ', text)
+
                 text = text.rstrip()
                 text = text.strip()
                 if '<image' in text:
                     continue
                 all_text_list.append(text)
-            all_text_list_process = []
             for paragraph in all_text_list:
-                if len(paragraph.split(' ')) > 25 or (len(paragraph.split(' ')) > 10 and paragraph[0].isalpha() == True and paragraph[0].isupper() == False) :
+                if len(paragraph.split(' ')) > 25 or (len(paragraph.split(' ')) > 10 and paragraph[0].isalpha() == True) :
                     all_text_list_process.append(paragraph)
+                    print(paragraph)
+    print(all_text_list_process)
     for idx, paragraph in enumerate(all_text_list_process):
         try:
             if paragraph[0].isupper() == True and (paragraph[-1] == '.' or paragraph[-1] == ':' or paragraph[-1] == '?' or paragraph[-1] == ','):
