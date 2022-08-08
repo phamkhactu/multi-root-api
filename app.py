@@ -24,9 +24,13 @@ def multi():
     content = request.get_json()  
     code = helpers.check_valid_input(content)
     if code != 200:
-        return {}, code
+        return {'result': {'cluster': [], 'topic': []}}
     content = helpers.convert_b64_file_to_text(content)
-    return json.dumps(controller.summary(content)).encode('utf8')
+    # logging.info(content)
+    res = controller.summary(content)
+    logging.info("Response!!!!!!!!!!!!!!!!!!")
+    logging.info(res)
+    return json.dumps(res).encode('utf8')
 
 init.Initialize()
 app.run(host='0.0.0.0', port=9988)

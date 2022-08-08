@@ -12,13 +12,14 @@ def summary(dataInput):
         id_mapAlgTypeAI = int(id_mapAlgTypeAI[0])
     except:
         logging.info("id_mapAlgTypeAI must int")
-        return {"result":None}, 500
+        return {'result': {'cluster': [], 'topic': []}}
 
     url_algo = init.find_algo_url(id_mapAlgTypeAI)
-    # url_algo = "http://192.168.6.18:8899/extract"
+    logging.info(f"url algorithm: {url_algo}")
+    # url_algo = "https://192.168.2.23:7300/MultiLSA"
     if url_algo is None:
         logging.info("Can not find url algorithm")
-        return {"result":None}, 500
+        return {'result': {'cluster': [], 'topic': []}}
     
     try:
         percent_output = float(dataInput["percent_output"])
@@ -27,13 +28,14 @@ def summary(dataInput):
         
     if cluster:
         url_cluster = init.configs["url_cluster"]
+        # url_cluster = "http://192.168.2.23:9400/TextClustering"
         res = requests.post(url_cluster, json={"list_doc":dataInput["raw_text"]})
         code = res.status_code
         list_cluster = json.loads(res.content)["clusters"]
-        # list_cluster, code =[[0,1],[1,2]],200
+        # list_cluster, code =[[0,1],[2,3]],200
         if code!=200:
             logging.info("err call api cluster")
-            return {"result":None}, 500
+            return {'result': {'cluster': [], 'topic': []}}
         inputs = helpers.pre_data_cluster(dataInput, list_cluster)
         dic_res = helpers.mul_infer(inputs,url_algo)
         result = {
@@ -52,7 +54,7 @@ def summary(dataInput):
                     "elem_arr": list_cluster[k]
                     },
             )
-        return result, 200
+        return result
     inputs = helpers.pre_data_topic(dataInput)
     dic_res = helpers.mul_infer(inputs,url_algo)
     result={"result":
@@ -71,7 +73,7 @@ def summary(dataInput):
                     "elem_arr": dataInput["topic"][k]["elem_arr"]
                 },
         )
-    return result, 200
+    return result
 
 if __name__ == '__main__':
     dataInput={

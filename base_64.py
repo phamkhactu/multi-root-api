@@ -78,8 +78,8 @@ def process_pdf_text(file_name,page_from,page_to):
             for paragraph in all_text_list:
                 if len(paragraph.split(' ')) > 25 or (len(paragraph.split(' ')) > 10 and paragraph[0].isalpha() == True) :
                     all_text_list_process.append(paragraph)
-                    print(paragraph)
-    print(all_text_list_process)
+                    # print(paragraph)
+    # print(all_text_list_process)
     for idx, paragraph in enumerate(all_text_list_process):
         try:
             if paragraph[0].isupper() == True and (paragraph[-1] == '.' or paragraph[-1] == ':' or paragraph[-1] == '?' or paragraph[-1] == ','):
@@ -91,7 +91,7 @@ def process_pdf_text(file_name,page_from,page_to):
                         all_text_list_process.pop(idx+1)
         except:
             pass
-    print(count)
+    # print(count)
     return all_text
 
 def process_doc_text(file_name):
