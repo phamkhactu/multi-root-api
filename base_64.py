@@ -47,9 +47,9 @@ def get_raw_text(raw_text,file_type,page_from,page_to):
 def process_pdf_text(file_name,page_from,page_to):
     doc = fitz.open(file_name)  # open document
     all_text = ''
-    all_text_list = []
     count = 0
     all_text_list_process = []
+    stop_paragraph = ('...', '.', '?', '!', '!!!', ':')
     for page in doc:  # iterate the document pages
         if page.number >= page_from and page.number <= page_to:
             count+=1
@@ -57,43 +57,81 @@ def process_pdf_text(file_name,page_from,page_to):
             # process into paragraph
             list_paragraph = []
             for b in blocks:
-                temp_paragraph = re.split('\n\n| \n \n',b[4])
+                temp_paragraph = re.split('\n\n| \n \n|\n \n',re.sub(' +', ' ', b[4]))
                 for paragraph in temp_paragraph:
                     list_paragraph.append(paragraph)
+            all_text_list = []
             for paragraph in list_paragraph:
-                text = paragraph.replace("\n", " ")
+                text = paragraph.replace("\n", " ") 
                 strencode = text.encode("ascii", "ignore")
                 #decode() method
                 text = strencode.decode()
                 text = text.replace("\t", "") 
                 text = text.replace("\r", "") 
                 re.sub('[^A-Za-z0-9]+', '', text)
-                text = re.sub(' +', ' ', text)
-
+                re.sub(' +', ' ', text)
                 text = text.rstrip()
                 text = text.strip()
                 if '<image' in text:
                     continue
+                if isinstance(re.search("Figure [0-9]", text), tuple) and re.search("Figure [0-9]", text).span()[0] == 0:
+                    continue
+                if isinstance(re.search("Table [0-9]", text), tuple) and re.search("Table [0-9]", text).span()[0] == 0:
+                    continue
                 all_text_list.append(text)
+                # all_text_list_unprocess.append(text)
             for paragraph in all_text_list:
-                if len(paragraph.split(' ')) > 25 or (len(paragraph.split(' ')) > 10 and paragraph[0].isalpha() == True) :
+                # remove chu thich
+                if len(paragraph.split(' ')) > 15:
+                    if paragraph[0].isnumeric() == True :
+                        if paragraph[1].isupper() == True:
+                            continue
+                        elif paragraph[1].isnumeric() == True:
+                            if paragraph[2].isupper() == True:
+                                continue
+                            elif paragraph[2].isnumeric() == True:
+                                if paragraph[3].isupper() == True:
+                                    continue
+                #             
+                if len(paragraph.split(' ')) > 25 :
                     all_text_list_process.append(paragraph)
-                    # print(paragraph)
-    # print(all_text_list_process)
+                elif len(paragraph.split(' ')) > 15 :
+                    if paragraph[0].isupper() == True and paragraph[-1] in stop_paragraph:
+                        continue
+                    elif paragraph[0].isupper() == True or paragraph[-1] in stop_paragraph or (paragraph[-1].isnumeric() == True and paragraph[-2] in stop_paragraph):
+                        all_text_list_process.append(paragraph)
+                    elif paragraph[0].isupper() == True or paragraph[-1] in stop_paragraph or (paragraph[-1].isnumeric() == True and paragraph[-2].isnumeric()== True and paragraph[-3] in stop_paragraph):
+                        all_text_list_process.append(paragraph)
+                    elif paragraph[0].isupper() == True or paragraph[-1] in stop_paragraph or (paragraph[-1].isnumeric() == True and paragraph[-2].isnumeric()== True and paragraph[-3].isnumeric()== True and paragraph[-4] in stop_paragraph):
+                        all_text_list_process.append(paragraph)
+                else:
+                    continue
     for idx, paragraph in enumerate(all_text_list_process):
         try:
-            if paragraph[0].isupper() == True and (paragraph[-1] == '.' or paragraph[-1] == ':' or paragraph[-1] == '?' or paragraph[-1] == ','):
+            if paragraph[0].isupper() == True and paragraph[-1] in stop_paragraph:
                 all_text  = all_text+'\n'+ all_text_list_process[idx]
-            elif paragraph[0].isupper() == True and  all_text_list_process[idx+1][0].isupper() == False and (paragraph[-1] != '.' or paragraph[-1] != ':' or paragraph[-1] != '?' or paragraph[-1] != ','):
-                    if len(all_text_list_process[idx+1])!=0 and all_text_list_process[idx+1][0].isupper() == False and all_text_list_process[idx+1][-1] =='.':
-                        all_text_list_process[idx] = all_text_list_process[idx]+all_text_list_process[idx+1]
+            elif paragraph[0].isupper() == True and paragraph[-1].isalpha() == False and paragraph[-2] in stop_paragraph:
+                all_text  = all_text+'\n'+ all_text_list_process[idx]
+            elif paragraph[0].isupper() == True and  all_text_list_process[idx+1][0].isupper() == False and paragraph[-1] not in stop_paragraph:
+                    if len(all_text_list_process[idx+1])!=0 and all_text_list_process[idx+1][0].isupper() == False and all_text_list_process[idx+1][-1] in stop_paragraph:
+                        all_text_list_process[idx] = all_text_list_process[idx]+' '+all_text_list_process[idx+1]
+                        all_text  = all_text+'\n'+ all_text_list_process[idx]
+                        all_text_list_process.pop(idx+1)
+                    elif len(all_text_list_process[idx+1])!=0 and all_text_list_process[idx+1][0].isupper() == False and all_text_list_process[idx+1][-2] in stop_paragraph and 6[idx+1][-1].isnumeric() == True:
+                        all_text_list_process[idx] = all_text_list_process[idx]+' '+all_text_list_process[idx+1]
+                        all_text  = all_text+'\n'+ all_text_list_process[idx]
+                        all_text_list_process.pop(idx+1)
+                    elif len(all_text_list_process[idx+1])!=0 and all_text_list_process[idx+1][0].isupper() == False and all_text_list_process[idx+1][-1].isnumeric() == True and all_text_list_process[idx+1][-2].isnumeric()== True and all_text_list_process[idx+1][-3] in stop_paragraph:
+                        all_text_list_process[idx] = all_text_list_process[idx]+' '+all_text_list_process[idx+1]
+                        all_text  = all_text+'\n'+ all_text_list_process[idx]
+                        all_text_list_process.pop(idx+1)
+                    elif len(all_text_list_process[idx+1])!=0 and all_text_list_process[idx+1][0].isupper() == False and all_text_list_process[idx+1][-1].isnumeric() == True and all_text_list_process[idx+1][-2].isnumeric()== True and all_text_list_process[idx+1][-3].isnumeric()== True and all_text_list_process[idx+1][-4] in stop_paragraph:
+                        all_text_list_process[idx] = all_text_list_process[idx]+' '+all_text_list_process[idx+1]
                         all_text  = all_text+'\n'+ all_text_list_process[idx]
                         all_text_list_process.pop(idx+1)
         except:
-            pass
-    # print(count)
+            continue
     return all_text
-
 def process_doc_text(file_name):
     doc = docx.Document(file_name)
     all_paras = doc.paragraphs
