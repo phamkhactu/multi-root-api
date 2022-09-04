@@ -60,4 +60,4 @@ def find_algo_topic(id_mapAl_algoAI):
 
 if __name__ =="__main__":
     Initialize()
-    print(find_algo_url(17))
+    my_db[mongodb_config["algorithm_collection"]].update_many({},{'$set':{"topic":''}},upsert=False, array_filters=None)

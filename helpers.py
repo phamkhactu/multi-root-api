@@ -9,7 +9,7 @@ import base_64
 def check_valid_input(dataInput):
     # check type
     try:
-        if not isinstance(dataInput["raw_text"], list) or len(dataInput["raw_text"]) <=1:
+        if not isinstance(dataInput["raw_text"], list) or len(dataInput["raw_text"]) <1:
             return 404
     except:
         return 404
@@ -120,6 +120,9 @@ def check_valid_by_topic(logic_topic,text):
     topic_choose = logic_topic[0]
     topic_not = logic_topic[1]
     
+    logging.info(f"topic and: {topic_choose}")
+        
+    logging.info(f"topic not: {topic_not}")
     #check if contain True logic not in text =>False not valid
     if check_contain(topic_not, text):
         return False
@@ -132,6 +135,7 @@ def check_valid_by_topic(logic_topic,text):
 
 def cluster_topics(dataInput):
     topics = dataInput["topic"]
+    # logging.info(f"topics logics {topics}")
     for idx, obj in enumerate(topics):
         logic = obj["logic"]
         elem_arr_valid = []
@@ -177,6 +181,9 @@ def pre_data_topic(dataInput):
 
 def convert_b64_file_to_text(dataInput):
     raw_data_files = dataInput["raw_text"]
+    # for idx, raw_data in enumerate(raw_data_files):
+    #     with open(f"dx{idx}.txt", "w") as w:
+    #         w.write(raw_data)
     file_types = dataInput["file_type"]
     for idx, data_file in enumerate(raw_data_files):
         r_text = base_64.get_raw_text(data_file,int(file_types[idx]),0,99999)
