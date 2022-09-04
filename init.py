@@ -47,6 +47,17 @@ def find_algo_url(id_mapAl_algoAI):
         pass
     return url
 
+
+def find_algo_topic(id_mapAl_algoAI):
+    topic = None
+    try:
+        mapAl_algo_ai = my_db[mongodb_config["mapAlgTypeAI_collection"]].find({"id":id_mapAl_algoAI})
+        id_algorithm = list(mapAl_algo_ai)[0]["algorId"]
+        topic = list(my_db[mongodb_config["algorithm_collection"]].find({"algorId":id_algorithm}))[0]["topic"]
+    except:
+        pass
+    return topic
+
 if __name__ =="__main__":
     Initialize()
     print(find_algo_url(17))
