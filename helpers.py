@@ -120,9 +120,6 @@ def check_valid_by_topic(logic_topic,text):
     topic_choose = logic_topic[0]
     topic_not = logic_topic[1]
     
-    logging.info(f"topic and: {topic_choose}")
-        
-    logging.info(f"topic not: {topic_not}")
     #check if contain True logic not in text =>False not valid
     if check_contain(topic_not, text):
         return False
@@ -138,6 +135,7 @@ def cluster_topics(dataInput):
     # logging.info(f"topics logics {topics}")
     for idx, obj in enumerate(topics):
         logic = obj["logic"]
+        logging.info(f"topic : {logic}")
         elem_arr_valid = []
         for jdx, doc in enumerate(dataInput["raw_text"]):
             valid = check_valid_by_topic(logic, doc)
