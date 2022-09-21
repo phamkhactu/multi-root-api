@@ -32,6 +32,7 @@ def summary(dataInput):
         res = requests.post(url_cluster, json={"list_doc":dataInput["raw_text"]})
         code = res.status_code
         list_cluster = json.loads(res.content)["clusters"]
+        logging.info(f"list cluster {list_cluster}")
         # list_cluster, code =[[0,1],[2,3]],200
         if code!=200:
             logging.info("err call api cluster")
