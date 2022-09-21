@@ -110,7 +110,7 @@ def check_contain(logic, text):
         is_valid = True
         keywords = express_logic.split(',')
         for keyword in keywords:
-            if not keyword.lower().rstrip() in text.lower():
+            if not keyword.lower().strip() in text.lower():
                 is_valid= False
                 break
         result.append(is_valid)
@@ -162,6 +162,17 @@ def pre_data_cluster(dataInput, list_cluster):
         
     return inputs
 
+def get_pharagraph_topic(doc, logic_topic):
+    topic_choose = logic_topic[0]
+    pharagraphs = doc.split("\n")
+    text = ""
+    for phara in pharagraphs:
+        for logic in topic_choose:
+            if logic.lower() in phara.lower():
+                text += phara +"\n"
+                break
+    return text
+
 def pre_data_topic(dataInput):
     dataInput = cluster_topics(dataInput)
     inputs = []
@@ -170,7 +181,7 @@ def pre_data_topic(dataInput):
         elem_arr = top["elem_arr"]
         list_text_raw = []
         for elem in elem_arr:
-            list_text_raw.append(dataInput["raw_text"][elem])
+            list_text_raw.append(get_pharagraph_topic(dataInput["raw_text"][elem], top["logic"]))
         inputs.append(
             {
             "list_doc":list_text_raw,
@@ -194,7 +205,7 @@ def convert_b64_file_to_text(dataInput):
     
 if __name__ == '__main__':
     data = {
-        "raw_text":["abc a fg", "bdcd a b dfdanc", "a bc cd"],
+        "raw_text":["abc\n a\n fg\n", "bdcd\n a\n b\n dfdanc\n", "a\n bc\n cd\n"],
         "topic": [
         {
             "logic":[["A","B"],["C"]],
@@ -209,8 +220,8 @@ if __name__ == '__main__':
         "percent_output": 0.3,
         "cluster": False
         }
-    data = cluster_topics(data)
-    print(data)
+    # data = cluster_topics(data)
+    # print(data)
     print(pre_data_topic(data))
     # raw="While the occupant of the governor's office is historically far less important than the party that controls the state legislature, top state officials in coming years are expected to wield significant influence in at least one major area.\nAnd that's health care, says political scientist Thad Kousser, co-author of The Power of American Governors.\n'No matter who wins the presidency, national politics is going to be stalemated on the Affordable Care Act,' says Kousser, of the University of California, San Diego.\nA recent U.S. Supreme Court decision giving states the ability to opt out of the law's expansion of Medicaid, the federal insurance program for poor, disabled and elderly Americans, confers 'incredible power' on the states and their governors, Kousser says.\nJust look at what happened when the Obama administration in 2010 offered federal stimulus money to states to begin building a high-speed rail network. Three Republican governors, including Rick Scott of Florida and Scott Walker of Wisconsin, rejected a share of the money citing debt and deficit concerns.\n'A [Mitt] Romney victory would dramatically empower Republican governors"
     
