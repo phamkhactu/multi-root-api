@@ -137,11 +137,13 @@ def cluster_topics(dataInput):
         logic = obj["logic"]
         logging.info(f"topic : {logic}")
         elem_arr_valid = []
+        list_text_valid = []
         for jdx, doc in enumerate(dataInput["raw_text"]):
-            valid = check_valid_by_topic(logic, doc)
-            if valid:
+            text_input = get_raw_text_by_topic(logic, doc)
+            if text_input != "": 
                 elem_arr_valid.append(jdx)
-        dataInput["topic"][idx].update({"elem_arr":elem_arr_valid})
+                list_text_valid.append(text_input)
+        dataInput["topic"][idx].update({"elem_arr":elem_arr_valid, "list_text_valid":list_text_valid})
     return dataInput
     
 def pre_data_cluster(dataInput, list_cluster):
@@ -176,13 +178,13 @@ def pre_data_topic(dataInput):
     inputs = []
     topics = dataInput["topic"]
     for top in topics:
-        elem_arr = top["elem_arr"]
-        list_text_raw = []
-        for elem in elem_arr:
-            list_text_raw.append(get_pharagraph_topic(dataInput["raw_text"][elem], top["logic"]))
+        # elem_arr = top["elem_arr"]
+        # list_text_raw = []
+        # for elem in elem_arr:
+        #     list_text_raw.append(get_pharagraph_topic(dataInput["raw_text"][elem], top["logic"]))
         inputs.append(
             {
-            "list_doc":list_text_raw,
+            "list_doc":top["list_text_valid"],
             "percent_output":dataInput["percent_output"]
         })
         
@@ -199,18 +201,75 @@ def convert_b64_file_to_text(dataInput):
         dataInput["raw_text"][idx] = r_text
     
     return dataInput
-    
+
+def removeDuplicates(lst):
+    return list(set([i for i in lst]))
+
+def get_raw_text_by_topic(topics,raw_text):
+    list_pragrab = raw_text.split('\n')
+    list_raw = []
+    topic_choose = topics[0]
+    topic_not = topics[1]
+    if len(topic_choose) != 0:
+        for key_words in topic_choose:
+            key_word = key_words.split(',')
+            for pragrab in list_pragrab :
+                is_choose = True
+                for word in key_word:
+                    if word.lower() not in pragrab.lower():
+                        is_choose = False
+                if is_choose == True:
+                    index = list_pragrab.index(pragrab)
+                    list_raw.append((index,pragrab))
+    else:
+        count = 0
+        for pragrab in list_pragrab :
+            list_raw.append((count,pragrab))
+            count +=1
+    list_raw = removeDuplicates(list_raw)
+    list_raw_process = sorted(list_raw, key=lambda tup: tup[0])
+    list_raw_final = []
+    if len(topic_not) != 0:
+        for key_words in topic_not:
+            key_word = key_words.split(',')
+            for pragrab in list_raw_process :
+                is_choose = True
+                for word in key_word:
+                    if ' '+word.strip().lower()+' ' in pragrab[1].lower():
+                        is_choose = False
+                if is_choose == True:
+                    list_raw_final.append(pragrab)
+    else:
+        list_raw_final = list_raw_process
+    list_raw_final = removeDuplicates(list_raw_final)
+    list_raw_final_process = sorted(list_raw_final, key=lambda tup: tup[0])
+    list_text_topic = []
+    for text_topic in list_raw_final_process:
+        list_text_topic.append(text_topic[1])
+    return '\n'.join(list_text_topic)
     
 if __name__ == '__main__':
+    with open("1.txt", "r") as r:
+        d1 = r.read()
+        
+    with open("2.txt", "r") as r:
+        d2 = r.read()
+        
+    with open("3.txt", "r") as r:
+        d3 = r.read()
     data = {
-        "raw_text":["abc\n a\n fg\n", "bdcd\n a\n b\n dfdanc\n", "a\n bc\n cd\n"],
+        "raw_text":[d1,d2,d3],
         "topic": [
         {
-            "logic":[["A","B"],["C"]],
+            "logic":[["china","taiwan"],[]],
             "displayName":"tên topic"
         },
         {
-            "logic":[["A","B","C"],["D"]],
+            "logic":[["China", "US"],[]],
+            "displayName":"tên topic"
+        },
+        {
+            "logic":[["russia", "ukraina"],[]],
             "displayName":"tên topic"
         }
         ],
@@ -220,7 +279,9 @@ if __name__ == '__main__':
         }
     # data = cluster_topics(data)
     # print(data)
-    print(pre_data_topic(data))
+    result = pre_data_topic(data)
+    with open("test.json", "w") as w:
+        json.dump(result,w)
     # raw="While the occupant of the governor's office is historically far less important than the party that controls the state legislature, top state officials in coming years are expected to wield significant influence in at least one major area.\nAnd that's health care, says political scientist Thad Kousser, co-author of The Power of American Governors.\n'No matter who wins the presidency, national politics is going to be stalemated on the Affordable Care Act,' says Kousser, of the University of California, San Diego.\nA recent U.S. Supreme Court decision giving states the ability to opt out of the law's expansion of Medicaid, the federal insurance program for poor, disabled and elderly Americans, confers 'incredible power' on the states and their governors, Kousser says.\nJust look at what happened when the Obama administration in 2010 offered federal stimulus money to states to begin building a high-speed rail network. Three Republican governors, including Rick Scott of Florida and Scott Walker of Wisconsin, rejected a share of the money citing debt and deficit concerns.\n'A [Mitt] Romney victory would dramatically empower Republican governors"
     
     # raw_data = [raw, raw, raw, raw, raw, raw,raw]
